@@ -2,11 +2,19 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Space Shooter</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Space Battle</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.min.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
+
+        :root {
+            --glow-color: #00ffff; /* Aqua glow */
+            --primary-text: #ffffff;
+            --secondary-text: #f1f1f1;
+            --modal-bg: rgba(15, 10, 25, 0.9);
+            --border-color: #00ffff;
+        }
 
         body {
             margin: 0;
@@ -16,7 +24,7 @@
             align-items: center;
             height: 100vh;
             background-color: #000;
-            color: #fff;
+            color: var(--primary-text);
             font-family: 'Orbitron', sans-serif;
             overflow: hidden;
         }
@@ -27,11 +35,30 @@
             height: 90vh;
             background: #000;
             border-radius: 10px;
-            box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+            box-shadow: 0 0 20px var(--glow-color), 0 0 40px var(--glow-color);
             overflow: hidden;
             display: flex;
             justify-content: center;
             align-items: center;
+            transition: transform 0.1s ease-in-out;
+        }
+
+        .shake {
+            animation: screenShake 0.3s;
+        }
+
+        @keyframes screenShake {
+            0% { transform: translate(1px, 1px) rotate(0deg); }
+            10% { transform: translate(-1px, -2px) rotate(-1deg); }
+            20% { transform: translate(-3px, 0px) rotate(1deg); }
+            30% { transform: translate(3px, 2px) rotate(0deg); }
+            40% { transform: translate(1px, -1px) rotate(1deg); }
+            50% { transform: translate(-1px, 2px) rotate(-1deg); }
+            60% { transform: translate(-3px, 1px) rotate(0deg); }
+            70% { transform: translate(3px, 1px) rotate(-1deg); }
+            80% { transform: translate(-1px, -1px) rotate(1deg); }
+            90% { transform: translate(1px, 2px) rotate(0deg); }
+            100% { transform: translate(1px, -2px) rotate(-1deg); }
         }
 
         canvas {
@@ -42,16 +69,43 @@
 
         #ui-container {
             position: absolute;
-            top: 10px;
-            left: 20px;
-            right: 20px;
+            top: 0;
+            left: 0;
+            right: 0;
             display: flex;
             justify-content: space-between;
-            align-items: center;
-            font-size: 24px;
-            color: #0ff;
-            text-shadow: 0 0 5px #0ff;
+            align-items: flex-start;
+            padding: 15px 25px;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.7), rgba(0,0,0,0));
             pointer-events: none;
+        }
+        
+        .center-ui {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .ui-element {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(0,0,0,0.4);
+            padding: 5px 15px;
+            border-radius: 20px;
+            border: 2px solid var(--border-color);
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary-text);
+            text-shadow: 0 0 5px var(--glow-color);
+        }
+
+        .ui-element svg {
+            width: 28px;
+            height: 28px;
+            fill: var(--glow-color);
+            filter: drop-shadow(0 0 5px var(--glow-color));
         }
         
         #power-up-timers-container {
@@ -84,20 +138,16 @@
             font-size: 18px;
             font-family: 'Orbitron', sans-serif;
             cursor: pointer;
-            border: 2px solid #0ff;
+            border: 2px solid var(--primary-text);
             background: transparent;
-            color: #0ff;
+            color: var(--primary-text);
             border-radius: 10px;
             transition: all 0.3s ease;
             pointer-events: all;
-            position: absolute;
-            top: 10px;
-            left: 50%;
-            transform: translateX(-50%);
         }
 
         #pauseButton:hover {
-            background: #0ff;
+            background: var(--primary-text);
             color: #000;
         }
         
@@ -106,26 +156,34 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background: rgba(0, 0, 0, 0.85);
+            background: var(--modal-bg);
             padding: 40px;
             border-radius: 15px;
             text-align: center;
-            border: 2px solid #0ff;
-            box-shadow: 0 0 30px rgba(0, 255, 255, 0.7);
+            border: 2px solid var(--border-color);
+            box-shadow: 0 0 30px var(--glow-color);
             z-index: 10;
             max-width: 80%;
         }
 
         .modal h1 {
             margin: 0 0 10px 0;
-            font-size: 48px;
-            color: #fff;
+            font-size: 64px;
+            font-weight: 900;
+            color: var(--primary-text);
+            text-shadow: 0 0 10px var(--primary-text), 0 0 20px var(--glow-color);
+            animation: titleGlow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes titleGlow {
+            from { text-shadow: 0 0 10px var(--primary-text), 0 0 20px var(--glow-color); }
+            to { text-shadow: 0 0 20px var(--primary-text), 0 0 40px var(--glow-color); }
         }
         
         .modal p {
-            margin: 0 0 20px 0;
+            margin: 0 0 30px 0;
             font-size: 20px;
-            color: #eee;
+            color: var(--secondary-text);
         }
 
         .modal button {
@@ -133,19 +191,53 @@
             font-size: 24px;
             font-family: 'Orbitron', sans-serif;
             cursor: pointer;
-            border: 2px solid #0ff;
+            border: 2px solid var(--primary-text);
             background: transparent;
-            color: #0ff;
+            color: var(--primary-text);
             border-radius: 10px;
             transition: all 0.3s ease;
-            text-shadow: 0 0 5px #0ff;
+            text-shadow: 0 0 5px var(--primary-text);
             margin: 5px;
         }
 
         .modal button:hover {
-            background: #0ff;
+            background: var(--primary-text);
             color: #000;
-            box-shadow: 0 0 20px #0ff;
+            box-shadow: 0 0 20px var(--primary-text);
+        }
+        
+        #startButton {
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); box-shadow: 0 0 10px var(--glow-color); }
+            50% { transform: scale(1.05); box-shadow: 0 0 25px var(--glow-color); }
+            100% { transform: scale(1); box-shadow: 0 0 10px var(--glow-color); }
+        }
+
+        #how-to-play {
+            margin-top: 40px;
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+        }
+        .control-info {
+            text-align: center;
+        }
+        .control-info p {
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+        .key-icon {
+            display: inline-block;
+            padding: 10px 15px;
+            border: 2px solid var(--primary-text);
+            border-radius: 5px;
+            background: rgba(255,255,255,0.1);
+        }
+        #spacebar-icon {
+            padding: 10px 40px;
         }
 
         #backstoryModal p {
@@ -158,7 +250,7 @@
         .loader {
             border: 4px solid #f3f3f3;
             border-radius: 50%;
-            border-top: 4px solid #0ff;
+            border-top: 4px solid var(--glow-color);
             width: 40px;
             height: 40px;
             animation: spin 1s linear infinite;
@@ -169,6 +261,59 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+
+        #mobile-controls {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 20%;
+            z-index: 100;
+        }
+
+        .arrow {
+            position: absolute;
+            width: 40%;
+            height: 100%;
+            opacity: 0.2;
+        }
+
+        #left-arrow {
+            left: 0;
+        }
+
+        #right-arrow {
+            right: 0;
+        }
+        
+        .arrow-icon {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 60px;
+            height: 60px;
+            fill: var(--glow-color);
+            filter: drop-shadow(0 0 10px var(--glow-color));
+        }
+
+        #left-arrow .arrow-icon {
+            left: 20px;
+        }
+
+        #right-arrow .arrow-icon {
+            right: 20px;
+        }
+
+
+        @media (max-width: 1024px) {
+            #mobile-controls {
+                display: block;
+            }
+            #how-to-play {
+                display: none;
+            }
+        }
     </style>
 </head>
 <body>
@@ -176,15 +321,36 @@
 <div id="game-container">
     <canvas id="gameCanvas"></canvas>
     <div id="ui-container">
-        <div id="score">Score: 0</div>
-        <div id="lives">Lives: 10</div>
+        <div id="level" class="ui-element">
+            <span>LEVEL: 1</span>
+        </div>
+        <div class="center-ui">
+            <div id="score" class="ui-element">
+                <span>0</span>
+            </div>
+            <button id="pauseButton">Pause</button>
+        </div>
+        <div id="lives" class="ui-element">
+            <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"></path></svg>
+            <span>10</span>
+        </div>
     </div>
     <div id="power-up-timers-container"></div>
-    <button id="pauseButton">Pause</button>
     <div id="startModal" class="modal">
-        <h1>Space Shooter</h1>
-        <p>Use Arrow Keys to Move & Hold Spacebar to Shoot</p>
+        <h1>Space Battle</h1>
+        <p>The galaxy needs a hero. Are you ready?</p>
         <button id="startButton">Start Game</button>
+        <div id="how-to-play">
+            <div class="control-info">
+                <p>MOVE</p>
+                <span class="key-icon">◀</span>
+                <span class="key-icon">▶</span>
+            </div>
+            <div class="control-info">
+                <p>SHOOT</p>
+                <span id="spacebar-icon" class="key-icon">SPACE</span>
+            </div>
+        </div>
     </div>
     <div id="gameOverModal" class="modal" style="display: none;">
         <h1>Game Over</h1>
@@ -198,6 +364,14 @@
         <button id="closeBackstoryButton">Close</button>
     </div>
 </div>
+<div id="mobile-controls">
+    <div id="left-arrow" class="arrow">
+        <svg class="arrow-icon" viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"></path></svg>
+    </div>
+    <div id="right-arrow" class="arrow">
+        <svg class="arrow-icon" viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"></path></svg>
+    </div>
+</div>
 
 <script>
     // --- Canvas and Context Setup ---
@@ -205,8 +379,9 @@
     const ctx = canvas.getContext('2d');
 
     // --- DOM Elements ---
-    const scoreEl = document.getElementById('score');
-    const livesEl = document.getElementById('lives');
+    const scoreEl = document.querySelector('#score span');
+    const livesEl = document.querySelector('#lives span');
+    const levelEl = document.querySelector('#level span');
     const startModal = document.getElementById('startModal');
     const gameOverModal = document.getElementById('gameOverModal');
     const startButton = document.getElementById('startButton');
@@ -218,6 +393,9 @@
     const backstoryModal = document.getElementById('backstoryModal');
     const backstoryContent = document.getElementById('backstoryContent');
     const closeBackstoryButton = document.getElementById('closeBackstoryButton');
+    const gameContainer = document.getElementById('game-container');
+    const leftArrow = document.getElementById('left-arrow');
+    const rightArrow = document.getElementById('right-arrow');
     
     // --- Sound Effects ---
     let sounds;
@@ -248,11 +426,12 @@
     let player, bullets, enemies, collectibles, stars, nebulae, enemyBullets, boss, missiles, playerClone;
     let bossActive = false, bossWarningActive = false;
     let levelUpDisplay = { text: '', timer: 0 };
+    const isMobile = 'ontouchstart' in window;
     
     let powerUps = {
-        speed: { active: false, timer: 0, duration: 5000, color: '#FFFF00' },
+        speed: { active: false, timer: 0, duration: 5000, color: '#39FF14' },
         shield: { active: false, timer: 0, duration: 7000, color: '#00FFFF' },
-        missiles: { active: false, timer: 0, duration: 8000, color: '#FF4500' },
+        missiles: { active: false, timer: 0, duration: 8000, color: '#FF0000' },
         clone: { active: false, timer: 0, duration: 10000, color: '#FF69B4' }
     };
 
@@ -277,10 +456,10 @@
             ctx.save();
             if (this.isClone) ctx.globalAlpha = 0.6;
             ctx.shadowBlur = 15;
-            let color = '#0ff';
-            if (player.level === 2) color = '#FFA500';
+            let color = '#00ffff';
+            if (player.level === 2) color = '#39FF14';
             if (player.level === 3) color = '#FF00FF';
-            if (player.level >= 4) color = '#FFFF00';
+            if (player.level >= 4) color = '#FFFFFF';
             ctx.shadowColor = color;
             ctx.fillStyle = this.isClone ? color : '#C0C0C0';
             ctx.beginPath();
@@ -490,9 +669,9 @@
         }
     }
     class UpgradeStar extends Collectible { draw() { this.drawStar('#FFD700', '#FFFF00'); } }
-    class SpeedStar extends Collectible { draw() { this.drawStar('#FFFF00', '#FFFFFF'); } }
+    class SpeedStar extends Collectible { draw() { this.drawStar('#39FF14', '#FFFFFF'); } }
     class ShieldStar extends Collectible { draw() { this.drawStar('#00FFFF', '#FFFFFF'); } }
-    class MissileStar extends Collectible { draw() { this.drawStar('#FF4500', '#FF0000'); } }
+    class MissileStar extends Collectible { draw() { this.drawStar('#FF0000', '#FFC0CB'); } }
     class CloneStar extends Collectible { draw() { this.drawStar('#FF69B4', '#FF1493'); } }
     class LifeStar extends Collectible {
         draw() {
@@ -542,9 +721,9 @@
     
     // --- Background Classes ---
     class Star {
-        constructor(x, y, radius, color) {
+        constructor(x, y, radius, color, speed) {
             this.x = x; this.y = y; this.radius = radius; this.color = color;
-            this.speed = Math.random() * 0.5 + 0.1;
+            this.speed = speed;
         }
         draw() { ctx.beginPath(); ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false); ctx.fillStyle = this.color; ctx.fill(); }
         update() { this.y += this.speed; if (this.y > canvas.height) { this.y = 0; this.x = Math.random() * canvas.width; } }
@@ -595,9 +774,10 @@
         lastEnemySpawnTime = 0; lastCollectibleSpawnTime = 0; lastShotTime = 0;
 
         stars = [];
-        for (let i = 0; i < 200; i++) {
-            stars.push(new Star(Math.random() * canvas.width, Math.random() * canvas.height, Math.random() * 1.5, `rgba(255, 255, 255, ${Math.random() * 0.8 + 0.2})`));
-        }
+        for (let i = 0; i < 100; i++) stars.push(new Star(Math.random() * canvas.width, Math.random() * canvas.height, Math.random() * 0.8, `rgba(255, 255, 255, ${Math.random() * 0.5 + 0.1})`, 0.2));
+        for (let i = 0; i < 80; i++) stars.push(new Star(Math.random() * canvas.width, Math.random() * canvas.height, Math.random() * 1.2, `rgba(255, 255, 255, ${Math.random() * 0.6 + 0.2})`, 0.4));
+        for (let i = 0; i < 50; i++) stars.push(new Star(Math.random() * canvas.width, Math.random() * canvas.height, Math.random() * 1.5, `rgba(255, 255, 255, ${Math.random() * 0.8 + 0.2})`, 0.6));
+        
         nebulae = [];
         for (let i = 0; i < 5; i++) {
             nebulae.push(new Nebula());
@@ -678,7 +858,7 @@
         if(boss) boss.draw();
         
         handleCollisions();
-        if (keys['Space'] && timestamp - lastShotTime > FIRE_RATE) {
+        if ((keys['Space'] || isMobile) && timestamp - lastShotTime > FIRE_RATE) {
             shoot(timestamp);
         }
         requestAnimationFrame(gameLoop);
@@ -804,10 +984,10 @@
             const level = player.level;
 
             switch (level) {
-                case 1: bullets.push(new Bullet(p.x, p.y, bulletWidth, bulletHeight, '#0ff')); break;
+                case 1: bullets.push(new Bullet(p.x, p.y, bulletWidth, bulletHeight, '#00ffff')); break;
                 case 2:
-                    bullets.push(new Bullet(p.x - 10, p.y, bulletWidth, bulletHeight, '#FFA500'));
-                    bullets.push(new Bullet(p.x + 10, p.y, bulletWidth, bulletHeight, '#FFA500'));
+                    bullets.push(new Bullet(p.x - 10, p.y, bulletWidth, bulletHeight, '#39FF14'));
+                    bullets.push(new Bullet(p.x + 10, p.y, bulletWidth, bulletHeight, '#39FF14'));
                     break;
                 case 3:
                     bullets.push(new Bullet(p.x, p.y, bulletWidth, bulletHeight, '#FF00FF'));
@@ -816,10 +996,10 @@
                     break;
                 case 4:
                     const fastBulletSpeed = currentBulletSpeed * 1.2;
-                    bullets.push(new Bullet(p.x - 15, p.y, bulletWidth, bulletHeight, '#FFFF00', 0, -fastBulletSpeed));
-                    bullets.push(new Bullet(p.x + 15, p.y, bulletWidth, bulletHeight, '#FFFF00', 0, -fastBulletSpeed));
-                    bullets.push(new Bullet(p.x, p.y, bulletWidth, bulletHeight, '#FFFF00', -3, -fastBulletSpeed));
-                    bullets.push(new Bullet(p.x, p.y, bulletWidth, bulletHeight, '#FFFF00', 3, -fastBulletSpeed));
+                    bullets.push(new Bullet(p.x - 15, p.y, bulletWidth, bulletHeight, '#FFFFFF', 0, -fastBulletSpeed));
+                    bullets.push(new Bullet(p.x + 15, p.y, bulletWidth, bulletHeight, '#FFFFFF', 0, -fastBulletSpeed));
+                    bullets.push(new Bullet(p.x, p.y, bulletWidth, bulletHeight, '#FFFFFF', -3, -fastBulletSpeed));
+                    bullets.push(new Bullet(p.x, p.y, bulletWidth, bulletHeight, '#FFFFFF', 3, -fastBulletSpeed));
                     break;
             }
         };
@@ -949,14 +1129,17 @@
     function loseLife() {
         if (powerUps.shield.active) return;
         if(sounds) sounds.playerHit.triggerAttackRelease('A2', '8n');
+        gameContainer.classList.add('shake');
+        setTimeout(() => gameContainer.classList.remove('shake'), 300);
         lives--;
         updateUI();
         if (lives <= 0) gameOver();
     }
 
     function updateUI() {
-        scoreEl.textContent = `Score: ${score}`;
-        livesEl.textContent = `Lives: ${lives}`;
+        scoreEl.textContent = score;
+        livesEl.textContent = lives;
+        levelEl.textContent = `LEVEL: ${currentLevel}`;
     }
 
     function spawnEnemy() {
@@ -1071,6 +1254,13 @@
     closeBackstoryButton.addEventListener('click', () => {
         backstoryModal.style.display = 'none';
     });
+
+    // Mobile controls
+    leftArrow.addEventListener('touchstart', (e) => { e.preventDefault(); keys['ArrowLeft'] = true; });
+    leftArrow.addEventListener('touchend', (e) => { e.preventDefault(); keys['ArrowLeft'] = false; });
+    rightArrow.addEventListener('touchstart', (e) => { e.preventDefault(); keys['ArrowRight'] = true; });
+    rightArrow.addEventListener('touchend', (e) => { e.preventDefault(); keys['ArrowRight'] = false; });
+
 
     // --- Initial Call ---
     init();
